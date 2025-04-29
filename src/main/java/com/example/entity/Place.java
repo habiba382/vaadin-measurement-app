@@ -16,7 +16,7 @@ public class Place {
     @OneToMany(mappedBy = "place")
     private List<Measurement> measurements;
 
-    // ======= GETTERIT JA SETTERIT =======
+
 
     public Long getId() {
         return id;

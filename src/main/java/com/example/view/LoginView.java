@@ -32,7 +32,7 @@ public class LoginView extends VerticalLayout {
 
 
 
-// Lisää footer
+
         Span footer = new Span("Copyright © 2025");
         footer.getStyle()
                 .set("font-size", "16px")

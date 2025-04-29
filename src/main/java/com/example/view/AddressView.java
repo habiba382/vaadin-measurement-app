@@ -31,7 +31,7 @@ public class AddressView extends VerticalLayout {
     private final PersonRepository  personRepo;
     private final Grid<Address>     grid = new Grid<>(Address.class);
 
-    // --- SUODATINKOMPONENTIT ---
+
     private final TextField streetFilter = new TextField("Hae kadun perusteella");
     private final TextField cityFilter   = new TextField("Hae kaupungin perusteella");
     private final ComboBox<Person> personFilter = new ComboBox<>("Hae henkilön perusteella");
@@ -42,14 +42,14 @@ public class AddressView extends VerticalLayout {
         this.addressRepo = addressRepo;
         this.personRepo  = personRepo;
 
-        // Takaisin-painike + otsikko
+
         add(new Button("Takaisin pääsivulle", e -> UI.getCurrent().navigate("")));
         add(new H1("Osoitteet"));
 
-        // --- Aseta suodattimet ---
+
         personFilter.setItems(personRepo.findAll());
         personFilter.setItemLabelGenerator(Person::getName);
-        // Arvonmuutoskuuntelijat refreshaavat gridin
+
         streetFilter.setClearButtonVisible(true);
         cityFilter.setClearButtonVisible(true);
         personFilter.setClearButtonVisible(true);
@@ -57,14 +57,14 @@ public class AddressView extends VerticalLayout {
         cityFilter.addValueChangeListener(e -> refreshGrid());
         personFilter.addValueChangeListener(e -> refreshGrid());
 
-        // Laita suodattimet samalle riville
+
         HorizontalLayout filters = new HorizontalLayout(
                 streetFilter, cityFilter, personFilter
         );
         filters.setSpacing(true);
         add(filters);
 
-        // --- Gridin sarakkeet ---
+
         grid.setColumns("id", "street", "city", "postalCode");
         grid.addColumn(addr -> addr.getPerson() != null
                         ? addr.getPerson().getName() : "")
@@ -136,17 +136,17 @@ public class AddressView extends VerticalLayout {
         Person personVal = personFilter.getValue();
 
         List<Address> items = addressRepo.findAll().stream()
-                // suodata kadun mukaan
+
                 .filter(a -> streetVal == null || streetVal.isEmpty()
                         || (a.getStreet() != null
                         && a.getStreet().toLowerCase().contains(streetVal.toLowerCase()))
                 )
-                // suodata kaupungin mukaan
+
                 .filter(a -> cityVal == null || cityVal.isEmpty()
                         || (a.getCity() != null
                         && a.getCity().toLowerCase().contains(cityVal.toLowerCase()))
                 )
-                // suodata henkilön mukaan
+
                 .filter(a -> personVal == null
                         || (a.getPerson() != null
                         && a.getPerson().getId().equals(personVal.getId()))

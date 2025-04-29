@@ -12,6 +12,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -21,7 +22,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.vaadin.flow.component.html.H1;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,151 +31,171 @@ import java.util.stream.Collectors;
 public class MeasurementView extends VerticalLayout {
 
     private final MeasurementRepository measurementRepository;
-    private final PersonRepository personRepository;
-    private final PlaceRepository placeRepository;
-    private final Grid<Measurement> grid = new Grid<>(Measurement.class);
+    private final PersonRepository       personRepository;
+    private final PlaceRepository        placeRepository;
+    private final Grid<Measurement>      grid = new Grid<>(Measurement.class);
 
-    private final TextField personSearchField = new TextField("Hae henkilön nimellä");
-    private final TextField bloodPressureSearchField = new TextField("Hae verenpaineella");
-    private final IntegerField weightSearchField = new IntegerField("Hae painolla");
+    private final ComboBox<Person> personFilter           = new ComboBox<>("Hae henkilöllä");
+    private final ComboBox<Place>  placeFilter            = new ComboBox<>("Hae paikalla");
+    private final TextField        bpFilter               = new TextField("Hae verenpaineella");
+    private final IntegerField     weightFilter           = new IntegerField("Hae painolla");
 
     @Autowired
-    public MeasurementView(MeasurementRepository measurementRepository,
-                           PersonRepository personRepository,
-                           PlaceRepository placeRepository) {
-        this.measurementRepository = measurementRepository;
-        this.personRepository = personRepository;
-        this.placeRepository = placeRepository;
+    public MeasurementView(MeasurementRepository mRepo,
+                           PersonRepository pRepo,
+                           PlaceRepository  plRepo) {
+        this.measurementRepository = mRepo;
+        this.personRepository      = pRepo;
+        this.placeRepository       = plRepo;
 
-        Button backButton = new Button("Takaisin pääsivulle", e -> UI.getCurrent().navigate(""));
-        add(backButton);
 
-        H1 header = new H1("Mittaus Tiedot");
-        add(header);
+        add(new Button("← Takaisin pääsivulle",
+                e -> UI.getCurrent().navigate("")));
+        add(new H1("Mittaus Tiedot"));
 
+        // --- Grid setup ---
         grid.setColumns("id", "bloodPressure", "weight");
-        grid.addColumn(m -> m.getPerson() != null ? m.getPerson().getName() : "").setHeader("Henkilö");
-        grid.addColumn(m -> m.getPlace() != null ? m.getPlace().getName() : "").setHeader("Paikka");
+        grid.addColumn(m -> m.getPerson() != null
+                        ? m.getPerson().getName()
+                        : "")
+                .setHeader("Henkilö");
+        grid.addColumn(m -> m.getPlace() != null
+                        ? m.getPlace().getName()
+                        : "")
+                .setHeader("Paikka");
+
+
+        personFilter.setItems(personRepository.findAll());
+        personFilter.setItemLabelGenerator(Person::getName);
+        personFilter.setClearButtonVisible(true);
+        personFilter.addValueChangeListener(e -> refreshGrid());
+
+        placeFilter.setItems(placeRepository.findAll());
+        placeFilter.setItemLabelGenerator(Place::getName);
+        placeFilter.setClearButtonVisible(true);
+        placeFilter.addValueChangeListener(e -> refreshGrid());
+
+        bpFilter.setClearButtonVisible(true);
+        bpFilter.addValueChangeListener(e -> refreshGrid());
+
+        weightFilter.setClearButtonVisible(true);
+        weightFilter.addValueChangeListener(e -> refreshGrid());
+
+        add(new HorizontalLayout(personFilter,
+                placeFilter,
+                bpFilter,
+                weightFilter));
+
 
         refreshGrid();
 
-        personSearchField.addValueChangeListener(event -> refreshGrid());
-        bloodPressureSearchField.addValueChangeListener(event -> refreshGrid());
-        weightSearchField.addValueChangeListener(event -> refreshGrid());
-        add(new HorizontalLayout(personSearchField, bloodPressureSearchField, weightSearchField));
 
-        Button addButton = new Button("Lisää mittaus", e -> openForm(new Measurement()));
-
-        Button editButton = new Button("Muokkaa", e -> {
-            Measurement selected = grid.asSingleSelect().getValue();
-            if (selected != null) {
-                openForm(selected);
-            } else {
-                Notification.show("Valitse mittaus muokattavaksi");
-            }
+        Button addBtn = new Button("Lisää mittaus",
+                e -> openForm(new Measurement()));
+        Button editBtn = new Button("Muokkaa", e -> {
+            Measurement sel = grid.asSingleSelect().getValue();
+            if (sel != null) openForm(sel);
+            else Notification.show("Valitse mittaus muokattavaksi");
         });
-
-        Button deleteButton = new Button("Poista", e -> {
-            Measurement selected = grid.asSingleSelect().getValue();
-            if (selected != null) {
-                measurementRepository.delete(selected);
+        Button delBtn = new Button("Poista", e -> {
+            Measurement sel = grid.asSingleSelect().getValue();
+            if (sel != null) {
+                measurementRepository.delete(sel);
                 refreshGrid();
                 Notification.show("Mittaus poistettu");
             }
         });
+        add(grid, new HorizontalLayout(addBtn, editBtn, delBtn));
 
-        add(grid, new HorizontalLayout(addButton, editButton, deleteButton));
 
-        add(grid, new HorizontalLayout(addButton, editButton, deleteButton));
-
-// Lisää footer
         Span footer = new Span("Copyright © 2025");
         footer.getStyle()
-                .set("font-size", "16px")
-                .set("color", "black")
-                .set("margin-top", "60px")
+                .set("font-size", "14px")
+                .set("margin-top", "20px")
                 .set("text-align", "center");
-
         add(footer);
-
     }
 
-    private void openForm(Measurement measurement) {
-        Dialog dialog = new Dialog();
-        TextField bloodPressure = new TextField("Verenpaine");
-        TextField weight = new TextField("Paino");
+    private void openForm(Measurement m) {
+        Dialog dlg = new Dialog();
+        TextField bpField   = new TextField("Verenpaine");
+        TextField wField    = new TextField("Paino");
         ComboBox<Person> personSelect = new ComboBox<>("Henkilö");
-        ComboBox<Place> placeSelect = new ComboBox<>("Paikka");
+        ComboBox<Place>  placeSelect  = new ComboBox<>("Paikka");
 
         personSelect.setItems(personRepository.findAll());
         personSelect.setItemLabelGenerator(Person::getName);
+        personSelect.setValue(m.getPerson());
 
         placeSelect.setItems(placeRepository.findAll());
         placeSelect.setItemLabelGenerator(Place::getName);
+        placeSelect.setValue(m.getPlace());
 
-        if (measurement.getPerson() != null) {
-            personSelect.setValue(measurement.getPerson());
-        }
-        if (measurement.getPlace() != null) {
-            placeSelect.setValue(measurement.getPlace());
-        }
+        bpField.setValue(m.getBloodPressure() != null ? m.getBloodPressure() : "");
+        wField.setValue(String.valueOf(m.getWeight()));
 
-        bloodPressure.setValue(measurement.getBloodPressure() != null ? measurement.getBloodPressure() : "");
-        weight.setValue(String.valueOf(measurement.getWeight()));
-
-        Button saveButton = new Button("Tallenna", event -> {
+        Button save = new Button("Tallenna", ev -> {
             try {
-                int parsedWeight = Integer.parseInt(weight.getValue());
-                measurement.setBloodPressure(bloodPressure.getValue());
-                measurement.setWeight(parsedWeight);
-                measurement.setPerson(personSelect.getValue());
-                measurement.setPlace(placeSelect.getValue());
-
-                if (measurement.getPerson() == null || measurement.getPlace() == null) {
+                m.setBloodPressure(bpField.getValue());
+                m.setWeight(Integer.parseInt(wField.getValue()));
+                m.setPerson(personSelect.getValue());
+                m.setPlace(placeSelect.getValue());
+                if (m.getPerson() == null || m.getPlace() == null) {
                     Notification.show("Valitse henkilö ja paikka");
                     return;
                 }
-
-                measurementRepository.save(measurement);
-                dialog.close();
+                measurementRepository.save(m);
+                dlg.close();
                 refreshGrid();
                 Notification.show("Tallennettu");
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException x) {
                 Notification.show("Paino pitää olla numero!");
             }
         });
 
-        dialog.add(new FormLayout(bloodPressure, weight, personSelect, placeSelect), saveButton);
-        dialog.open();
+        dlg.add(new FormLayout(bpField, wField, personSelect, placeSelect), save);
+        dlg.open();
     }
 
     private void refreshGrid() {
-        String personFilter = personSearchField.getValue();
-        String bloodPressureFilter = bloodPressureSearchField.getValue();
-        Integer weightFilter = weightSearchField.getValue();
+        List<Measurement> items = measurementRepository.findAll();
 
-        List<Measurement> measurements = measurementRepository.findAll();
 
-        if (personFilter != null && !personFilter.isEmpty()) {
-            measurements = measurements.stream()
-                    .filter(m -> m.getPerson() != null &&
-                            m.getPerson().getName() != null &&
-                            m.getPerson().getName().toLowerCase().contains(personFilter.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-        if (bloodPressureFilter != null && !bloodPressureFilter.isEmpty()) {
-            measurements = measurements.stream()
-                    .filter(m -> m.getBloodPressure() != null &&
-                            m.getBloodPressure().toLowerCase().contains(bloodPressureFilter.toLowerCase()))
-                    .collect(Collectors.toList());
-        }
-        if (weightFilter != null) {
-            measurements = measurements.stream()
-                    .filter(m -> m.getWeight() == weightFilter)
+        Person pf = personFilter.getValue();
+        if (pf != null) {
+            Long pid = pf.getId();
+            items = items.stream()
+                    .filter(m -> m.getPerson() != null
+                            && pid.equals(m.getPerson().getId()))
                     .collect(Collectors.toList());
         }
 
-        grid.setItems(measurements);
+        Place plf = placeFilter.getValue();
+        if (plf != null) {
+            Long plid = plf.getId();
+            items = items.stream()
+                    .filter(m -> m.getPlace() != null
+                            && plid.equals(m.getPlace().getId()))
+                    .collect(Collectors.toList());
+        }
+
+        String bp = bpFilter.getValue();
+        if (bp != null && !bp.isEmpty()) {
+            items = items.stream()
+                    .filter(m -> m.getBloodPressure() != null
+                            && m.getBloodPressure()
+                            .toLowerCase()
+                            .contains(bp.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        Integer w = weightFilter.getValue();
+        if (w != null) {
+            items = items.stream()
+                    .filter(m -> m.getWeight() == w)
+                    .collect(Collectors.toList());
+        }
+
+        grid.setItems(items);
     }
 }
-

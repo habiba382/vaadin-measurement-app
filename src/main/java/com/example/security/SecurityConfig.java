@@ -15,7 +15,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                 .requestMatchers("/images/**", "/styles.css").permitAll()
         );
 
-        // Tämä lisää Vaadinin oletuskonfiguraatiot
+
         super.configure(http);
 
 

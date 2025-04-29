@@ -11,7 +11,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 @AnonymousAllowed
-@Route("") // Root-sivu
+@Route("")
 public class MainView extends VerticalLayout {
 
     public MainView() {
@@ -22,13 +22,13 @@ public class MainView extends VerticalLayout {
         setJustifyContentMode(JustifyContentMode.START);
         getStyle().set("position", "relative");
 
-        // Otsikot
+
         H1 header = new H1("Tervetuloa");
         H2 header2 = new H2("Mittaus Sovellukselle");
         header.getStyle().set("color", "#2c3e50").set("margin-bottom", "0");
         header2.getStyle().set("color", "#2c3e50").set("margin-top", "0");
 
-        // Navigaatiopainikkeet
+
         Button measurementBtn = new Button("Mittaus tiedot", evt ->
                 UI.getCurrent().navigate("measurements"));
         Button personBtn = new Button("Henkilö tiedot", evt ->
@@ -49,7 +49,7 @@ public class MainView extends VerticalLayout {
         buttonLayout.setSpacing(true);
         buttonLayout.getStyle().set("margin-top", "150px"); // Siirto keskelle
 
-        // Footer vasempaan alakulmaan
+
         Span footer = new Span("Copyright © 2025");
         footer.getStyle()
                 .set("font-size", "16px")

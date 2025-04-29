@@ -19,7 +19,6 @@ public class Person {
     @JoinColumn(name = "person_id")
     private Address address;
 
-    // olemassaolevat getters/setters...
 
     public Address getAddress() {
         return address;

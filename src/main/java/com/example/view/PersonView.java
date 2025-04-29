@@ -30,7 +30,7 @@ public class PersonView extends VerticalLayout {
 
     private final TextField nameSearchField = new TextField("Hae nimen perusteella");
     private final IntegerField ageSearchField = new IntegerField("Hae iän perusteella");
-    private final IntegerField idSearchField = new IntegerField("Hae ID:llä"); // ➔ UUSI
+    private final IntegerField idSearchField = new IntegerField("Hae ID:llä");
 
     @Autowired
     public PersonView(PersonRepository personRepository) {
@@ -47,8 +47,8 @@ public class PersonView extends VerticalLayout {
 
         nameSearchField.addValueChangeListener(event -> refreshGrid());
         ageSearchField.addValueChangeListener(event -> refreshGrid());
-        idSearchField.addValueChangeListener(event -> refreshGrid()); // ➔ UUSI
-        add(new HorizontalLayout(nameSearchField, ageSearchField, idSearchField)); // ➔ UUSI
+        idSearchField.addValueChangeListener(event -> refreshGrid());
+        add(new HorizontalLayout(nameSearchField, ageSearchField, idSearchField));
 
         Button addButton = new Button("Lisää henkilö", e -> openPersonForm(new Person()));
 
@@ -74,7 +74,7 @@ public class PersonView extends VerticalLayout {
 
         add(grid, new HorizontalLayout(addButton, editButton, deleteButton));
 
-// Lisää footer
+
         Span footer = new Span("Copyright © 2025");
         footer.getStyle()
                 .set("font-size", "16px")
@@ -121,7 +121,7 @@ public class PersonView extends VerticalLayout {
                     .collect(Collectors.toList());
         }
 
-        if (ageFilter != null) { // Ei tarvitse tarkistaa person.getAge != null
+        if (ageFilter != null) {
             persons = persons.stream()
                     .filter(person -> person.getAge() == ageFilter)
                     .collect(Collectors.toList());

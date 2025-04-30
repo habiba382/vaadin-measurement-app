@@ -8,9 +8,11 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-@AnonymousAllowed
+import jakarta.annotation.security.RolesAllowed;
+
+
+@RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
 @Route("")
 public class MainView extends VerticalLayout {
 

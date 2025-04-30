@@ -20,13 +20,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AnonymousAllowed
+@RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
 @Route("measurements")
 public class MeasurementView extends VerticalLayout {
 
@@ -49,7 +50,7 @@ public class MeasurementView extends VerticalLayout {
         this.placeRepository       = plRepo;
 
 
-        add(new Button("← Takaisin pääsivulle",
+        add(new Button("Takaisin pääsivulle",
                 e -> UI.getCurrent().navigate("")));
         add(new H1("Mittaus Tiedot"));
 

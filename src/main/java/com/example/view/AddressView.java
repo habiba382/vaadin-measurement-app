@@ -16,7 +16,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.UI;
 
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Route("addresses")
-@AnonymousAllowed
+@RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
 public class AddressView extends VerticalLayout {
 
     private final AddressReopsitory addressRepo;

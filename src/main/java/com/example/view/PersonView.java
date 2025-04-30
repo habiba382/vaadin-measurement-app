@@ -14,14 +14,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
+
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.html.H1;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AnonymousAllowed
+@RolesAllowed("ROLE_ADMIN")
 @Route("persons")
 public class PersonView extends VerticalLayout {
 
